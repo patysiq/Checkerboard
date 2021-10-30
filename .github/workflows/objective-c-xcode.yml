@@ -1,29 +1,24 @@
-name: Xcode - Build and Analyze
+name: Swift
 
 on:
   pull_request:
-    branches: [ main ]
+     branches: [main, develop]
 
 jobs:
   build:
-    name: Build and analyse default scheme using xcodebuild command
-    runs-on: macos-latest
+    runs-on: macOS-latest
     strategy:
-      matrix:
-        destination: ['platform=iOS Simulator,OS=13.7,name=iPhone 11']
-
+        matrix:
+          destination: ['platform=iOS Simulator,OS=14.4,name=iPhone 12']
+          
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Set Default Scheme
-        run: |
-          scheme_list=$(xcodebuild -list -json | tr -d "\n")
-          default=$(echo $scheme_list | ruby -e "require 'json'; puts JSON.parse(STDIN.gets)['project']['targets'][0]")
-          echo $default | cat >default
-          echo Using default scheme: $default
-      - name: Build
-        env:
-          scheme: ${{ 'default' }}
-        run: |
-          xcodebuild clean test -project Checkerboard.pbxproject -scheme Checkerboard -destination "${destination}" CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=NO
-        
+    - name: Checkout
+      uses: actions/checkout@master
+      
+    - name: Build and Test
+      run: |
+        pwd
+        xcodebuild clean test -project Checkerboard.xcodeproj -scheme Checkerboard -destination "${destination}" CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=NO
+        #bash <(curl -s https://codecov.io/bash)
+      env: 
+        destination: ${{ matrix.destination}}
